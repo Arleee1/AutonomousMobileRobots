@@ -26,7 +26,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(ttb_turn main.cpp)
+add_executable(ttb_turn src/ttb_turn.cpp)
 ament_target_dependencies(ttb_turn rclcpp sensor_msgs geometry_msgs) 
 
 install(TARGETS
