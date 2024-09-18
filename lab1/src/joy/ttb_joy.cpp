@@ -36,6 +36,7 @@ private:
   {
 
     auto joy_msg = sensor_msgs::msg::Joy();
+    auto cmd_vel_msg = geometry_msgs::msg::Twist();
     joy_msg.header.stamp = this->get_clock()->now();
 
     joy_msg.axes = msg->axes;  
