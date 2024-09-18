@@ -1,4 +1,4 @@
-
+#include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <chrono>
 
@@ -13,6 +13,8 @@ public:
   {
 
     // Create Publisher for Turtlebot velocity commands
+
+    cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
 
     joy_publisher = this->create_publisher<sensor_msgs::msg::Joy>("joy", 10);
     
@@ -39,7 +41,11 @@ private:
     joy_msg.axes = msg->axes;  
     joy_msg.buttons = msg->buttons; 
 
+    cmd_vel_msg.linear.x = msg->axes[1];   // Forward/backward movement
+    cmd_vel_msg.angular.z = msg->axes[0];  // Rotation
+
     joy_publisher->publish(joy_msg)
+    cmd_vel_publisher->publish(cmd_vel_msg);
     RCLCPP_INFO(this->get_logger(), "Published Joy message with axes: [%f, %f, %f] and buttons: [%d, %d, %d]",
                      joy_msg.axes[0], joy_msg.axes[1], joy_msg.axes[2],
                      joy_msg.buttons[0], joy_msg.buttons[1], joy_msg.buttons[2]);
@@ -56,6 +62,9 @@ private:
   // Controller Publisher/Subscriber
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr joy_publisher;
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber;
+
+  // Velocity Publisher
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
 
   // Control timing control
   rclcpp::TimerBase::SharedPtr timer;
