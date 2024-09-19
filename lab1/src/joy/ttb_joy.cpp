@@ -21,7 +21,7 @@ public:
     joy_publisher = this->create_publisher<sensor_msgs::msg::Joy>("TTB10/joy", 10);
     
     joy_subscriber = this->create_subscription<sensor_msgs::msg::Joy>(
-            "joy", 10, std::bind(&TurtlebotJoey::joy_callback, this, std::placeholders::_1));
+            "joy", 10, std::bind(&TurtlebotJoy::joy_callback, this, std::placeholders::_1));
 
   }
 
@@ -53,9 +53,6 @@ private:
   // ---------------------------------//
   // Variable used by the Node Object //
   // ---------------------------------//
-
-  // ROS subsriber object
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub;
 
   // Controller Publisher/Subscriber
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr joy_publisher;
