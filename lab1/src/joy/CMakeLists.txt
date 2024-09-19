@@ -26,4 +26,18 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+add_executable(ttb_joy ${PROJECT_SOURCE_DIR}/ttb_joy.cpp)
+ament_target_dependencies(ttb_joy rclclpp sensor_msgs geometry_msgs)
+
+install(TARGETS 
+  ttb_joy
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY 
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+
 ament_package()
