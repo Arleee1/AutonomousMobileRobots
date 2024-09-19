@@ -17,11 +17,16 @@ public:
     // Create Publisher for Turtlebot velocity commands
 
     cmd_vel_publisher = this->create_publisher<geometry_msgs::msg::Twist>("TTB10/cmd_vel", 10);
-
-    joy_publisher = this->create_publisher<sensor_msgs::msg::Joy>("TTB10/joy", 10);
     
     joy_subscriber = this->create_subscription<sensor_msgs::msg::Joy>(
-            "joy", 10, std::bind(&TurtlebotJoy::joy_callback, this, std::placeholders::_1));
+            "TTB10/joy", 10, std::bind(&TurtlebotJoy::joy_callback, this, std::placeholders::_1));
+
+      
+    timer = this->create_wall_timer(
+      100ms,                                           // Period of rate that function is called
+      [this] (void) { this->vel_command_loop(); } // Which function to call
+    );
+    
 
   }
 
@@ -33,36 +38,50 @@ private:
   {
 
     auto joy_msg = sensor_msgs::msg::Joy();
-    auto cmd_vel_msg = geometry_msgs::msg::Twist();
-    joy_msg.header.stamp = this->get_clock()->now();
+     // take values from here, make them 
 
     joy_msg.axes = msg->axes;  
     joy_msg.buttons = msg->buttons; 
 
-    cmd_vel_msg.linear.x = msg->axes[1];   // Forward/backward movement
-    cmd_vel_msg.angular.z = msg->axes[0];  // Rotation
+    vel_x = joy_msg.axes[1];
+    vel_z = joy_msg.axes[0];
 
-    joy_publisher->publish(joy_msg);
-    cmd_vel_publisher->publish(cmd_vel_msg);
-    RCLCPP_INFO(this->get_logger(), "Published Joy message with axes: [%f, %f, %f] and buttons: [%d, %d, %d]",
-                     joy_msg.axes[0], joy_msg.axes[1], joy_msg.axes[2],
-                     joy_msg.buttons[0], joy_msg.buttons[1], joy_msg.buttons[2]);
+  // take joy msg from axes, transfer into velocity, publish that velocity (twist)
 
   }
+
+  void vel_command_loop(void)
+  {
+    
+    cmd_vel_msg.linear.x = vel_x;
+    cmd_vel_msg.angular.z = vel_z;
+    RCLCPP_INFO(this->get_logger(), "Linear Vel: %0.3f", cmd_vel_msg.linear.x);
+    RCLCPP_INFO(this->get_logger(), "Angular Vel: %0.3f", cmd_vel_msg.angular.z);
+
+    cmd_vel_publisher->publish(cmd_vel_msg);
+
+  }
+
 
   // ---------------------------------//
   // Variable used by the Node Object //
   // ---------------------------------//
 
-  // Controller Publisher/Subscriber
-  rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr joy_publisher;
+  // Controller Subscriber
+
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber;
 
   // Velocity Publisher
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher;
+  
+  geometry_msgs::msg::Twist cmd_vel_msg;
 
   // Control timing control
   rclcpp::TimerBase::SharedPtr timer;
+
+  double vel_x = 0;
+
+  double vel_z = 0;
 
 
 };
