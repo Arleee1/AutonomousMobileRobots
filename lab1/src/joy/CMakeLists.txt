@@ -27,7 +27,7 @@ if(BUILD_TESTING)
 endif()
 
 add_executable(ttb_joy ${PROJECT_SOURCE_DIR}/ttb_joy.cpp)
-ament_target_dependencies(ttb_joy rclclpp sensor_msgs geometry_msgs)
+ament_target_dependencies(ttb_joy rclcpp sensor_msgs geometry_msgs)
 
 install(TARGETS 
   ttb_joy
