@@ -23,18 +23,13 @@ public:
     joy_subscriber = this->create_subscription<sensor_msgs::msg::Joy>(
             "joy", 10, std::bind(&TurtlebotJoey::joy_callback, this, std::placeholders::_1));
 
-    // Timer object that controls how often your command loop function is called
-    timer = this->create_wall_timer(
-      100ms,                                           // Period of rate that function is called
-      [this] (void) { this->command_loop_function(); } // Which function to call
-    );
   }
 
 private:
 
 
   // Function called repeatedly by node.
-  void joy_callbac(const sensor_msgs::msg::Joy::SharedPtr msg)
+  void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
   {
 
     auto joy_msg = sensor_msgs::msg::Joy();
