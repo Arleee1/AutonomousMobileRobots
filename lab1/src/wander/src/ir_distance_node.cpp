@@ -23,7 +23,11 @@ public:
         );
 
         // Publisher for the IR range data
-        range_publisher = this->create_publisher<sensor_msgs::msg::Range>("ir_range", 10);
+        range_publisher = this->create_publisher<sensor_msgs::msg::Range>(
+            "ir_range", 
+            rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::BestEffort)
+        );
+
     }
 
 private:
