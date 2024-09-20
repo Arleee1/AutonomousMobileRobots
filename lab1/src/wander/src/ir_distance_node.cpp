@@ -31,7 +31,7 @@ public:
     }
 
 private:
-    int ir_index;  // Member variable for ir_index
+    size_t ir_index;  // Parameter ir_index
 
     void publishRangeData(const irobot_create_msgs::msg::IrIntensityVector &msg)
     {

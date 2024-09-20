@@ -41,6 +41,7 @@ public:
   }
 
 private:
+  float const_speed;  // Parameter const_speed
 
   // Callback function for receiving IR sensor data
   void ir_sensor_callback(const sensor_msgs::msg::Range &msg)
