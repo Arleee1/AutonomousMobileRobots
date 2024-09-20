@@ -29,6 +29,15 @@ public:
       100ms,                                           // Period of rate that function is called
       [this] (void) { this->command_loop_function(); } // Which function to call
     );
+
+    // Constant Speed Command Parameter 
+    // Speed set if no obstacle detected; No command sent if speed will be 0.0
+    this->declare_parameter<float>("const_speed", 0.3);
+    
+    // Get the value of Constant Speed Command Parameter 
+    this->get_parameter("const_speed", const_speed);
+
+    RCLCPP_INFO(this->get_logger(), "If no object detected using constant speed: %0.3f", const_speed);
   }
 
 private:
@@ -54,10 +63,12 @@ private:
     if(obstacle_detected) {
       vel_cmd.angular.z = 0.5;
       vel_cmd.linear.x = 0.0;
-    } else {
+    } else if(const_speed > 0.0) {
       vel_cmd.angular.z = 0.0;
-      vel_cmd.linear.x = 0.3;
-      RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", 0.3);
+      vel_cmd.linear.x = const_speed;
+      RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", const_speed);
+    } else {
+      return; // No command sent if speed is 0.0
     }
 
     vel_pub->publish(vel_cmd);
