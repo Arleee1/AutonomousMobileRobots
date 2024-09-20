@@ -5,31 +5,52 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(irobot_create_msgs REQUIRED)
 
+# Add executables
 add_executable(wander_node src/wander_node.cpp)
-ament_target_dependencies(wander_node rclcpp)
+add_executable(ir_distance_node src/ir_distance_node.cpp)
 
+# Specify libraries to link against
+set(dependencies
+  rclcpp
+  sensor_msgs
+)
+
+# For wander_node
+ament_target_dependencies(wander_node
+  ${dependencies}
+  geometry_msgs
+)
+
+# For ir_distance_node
+ament_target_dependencies(ir_distance_node
+  ${dependencies}
+  irobot_create_msgs
+)
+
+# Install the executables
 install(TARGETS
   wander_node
-  DESTINATION lib/${PROJECT_NAME})
+  ir_distance_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
+# Install launch files
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Linting and testing
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_lint_auto_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
