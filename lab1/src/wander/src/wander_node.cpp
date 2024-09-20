@@ -2,7 +2,7 @@
 #include <rmw/qos_profiles.h>
 
 #include <geometry_msgs/msg/twist.hpp>
-#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/range.hpp>
 
 #include <chrono>
 
@@ -14,11 +14,11 @@ public:
   WanderNode() 
       : Node("wander_node")
   {
-    // Create Subscribe to the IMU data topic fromm Turtlebot
-    imu_sub  = this->create_subscription<sensor_msgs::msg::Imu>(
-      "TTBXX/imu", 
-      rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
-      [this](const sensor_msgs::msg::Imu &msg) { this->imu_callback(msg); }
+    // Subscribe to the IR range data topic
+    range_sub  = this->create_subscription<sensor_msgs::msg::Range>(
+      "ir_range", 
+      rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::BestEffort),
+      [this](const sensor_msgs::msg::Range &msg) { this->ir_sensor_callback(msg); }
     );
 
     // Create Publisher for Turtlebot velocity commands
@@ -33,48 +33,54 @@ public:
 
 private:
 
-  // Callback function for receiving Imu sensor data
-  void imu_callback(const sensor_msgs::msg::Imu &msg)
+  // Callback function for receiving IR sensor data
+  void ir_sensor_callback(const sensor_msgs::msg::Range &msg)
   {
-    angular_velocity_z = msg.angular_velocity.z;
+    // If the range is less than 0.1 meters, an obstacle is detected
+    if (msg.range < 0.1) {
+      obstacle_detected = true;
+      vel_cmd.angular.z = 0.5;  // Turn the robot
+      vel_cmd.linear.x = 0.0;   // Stop moving forward
+      vel_pub->publish(vel_cmd);
+      RCLCPP_INFO(this->get_logger(), "Object Detected; Angular Vel: %0.3f", 0.5);
+    } else {
+      obstacle_detected = false;  // No obstacle detected
+    }
   }
 
   // Function called repeatedly by node.
   void command_loop_function(void)
   {
-    RCLCPP_INFO(this->get_logger(), "Angular Vel: %0.3f", angular_velocity_z);
-    if(count < 50) {
-      vel_cmd.angular.z = 0.4;
+    if(obstacle_detected) {
+      vel_cmd.angular.z = 0.5;
+      vel_cmd.linear.x = 0.0;
     } else {
       vel_cmd.angular.z = 0.0;
+      vel_cmd.linear.x = 0.3;
+      RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", 0.3);
     }
 
     vel_pub->publish(vel_cmd);
-
-    ++count;
   }
 
   // ---------------------------------//
-  // Variable used by the Node Object //
+  // Variables used by the Node Object //
   // ---------------------------------//
 
-  // ROS subsriber object
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub;
+  // ROS subscriber object
+  rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr range_sub;
 
   // ROS publisher object
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub;
 
-  // Control timing control
+  // Control timing
   rclcpp::TimerBase::SharedPtr timer;
 
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
 
-  // Variable to hold angular velocity data
-  double angular_velocity_z;
-
-  // Counter
-  int count = 0;
+  // Variable to track whether an obstacle is detected
+  bool obstacle_detected = false;
 };
 
 
