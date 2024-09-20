@@ -31,7 +31,7 @@ public:
     }
 
 private:
-    size_t ir_index;  // Parameter ir_index
+    int ir_index;  // Parameter ir_index
 
     void publishRangeData(const irobot_create_msgs::msg::IrIntensityVector &msg)
     {
@@ -39,7 +39,7 @@ private:
         range_msg.header.stamp = this->now();
         
         // Check if ir_index is within bounds
-        if (ir_index < msg.readings.size()) {
+        if (static_cast<size_t>(ir_index) < msg.readings.size()) {
             range_msg.header.frame_id = msg.readings[ir_index].header.frame_id;
             range_msg.radiation_type = sensor_msgs::msg::Range::INFRARED;
             range_msg.field_of_view = 0.1; // Field of view in radians
