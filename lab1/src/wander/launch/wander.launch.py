@@ -6,11 +6,11 @@ def generate_launch_description():
         Node(
             package='wander',
             namespace='',
-            executable='wander_node.cpp',
+            executable='wander_node',
             name='wander_node',
             output='screen',
             parameters=[
-                {'const_speed': '0.3'}
+                {'const_speed': 0.3}
                 # {'const_speed': '0.0'} # for state machine
             ],
             remappings=[
@@ -20,11 +20,11 @@ def generate_launch_description():
         Node(
             package='wander',
             namespace='',
-            executable='ir_distance_node.cpp',
+            executable='ir_distance_node',
             name='ir_distance_node',
             output='screen',
             parameters=[
-                {'ir_index': '3'}
+                {'ir_index': 3}
             ],
             remappings=[
 
