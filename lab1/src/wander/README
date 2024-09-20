@@ -1,0 +1,5 @@
+Autonomous wandering with range sensor: use the IR range sensors to create an autonomous
+navigation behavior in which the robot drives with constant input speed v=0.3m/s. As soon as
+an obstacle is detected (range < 0.1m), the robot needs to stop and turn toward a random
+different direction and keep going until it detects another obstacle and the same process
+repeats. Save a bag file with all the data and visualize the plots of the IR range sensor.
