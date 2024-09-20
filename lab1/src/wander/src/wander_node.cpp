@@ -17,12 +17,12 @@ public:
     // Subscribe to the IR range data topic
     range_sub  = this->create_subscription<sensor_msgs::msg::Range>(
       "ir_range", 
-      rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::BestEffort),
+      rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
       [this](const sensor_msgs::msg::Range &msg) { this->ir_sensor_callback(msg); }
     );
 
     // Create Publisher for Turtlebot velocity commands
-    vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("TTBXX/cmd_vel", 10);
+    vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("TTB10/cmd_vel", 10);
 
     // Timer object that controls how often your command loop function is called
     timer = this->create_wall_timer(
