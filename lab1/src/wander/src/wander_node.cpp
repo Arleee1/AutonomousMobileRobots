@@ -3,8 +3,8 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/range.hpp>
-
 #include <chrono>
+#include <random>
 
 using namespace std::chrono_literals;
 
@@ -48,31 +48,44 @@ private:
   {
     // If the range is less than 0.1 meters, an obstacle is detected
     if (msg.range < 0.1) {
-      obstacle_detected = true;
-      vel_cmd.angular.z = 0.5;  // Turn the robot
-      vel_cmd.linear.x = 0.0;   // Stop moving forward
-      vel_pub->publish(vel_cmd);
-      RCLCPP_INFO(this->get_logger(), "Object Detected; Angular Vel: %0.3f", 0.5);
-    } else {
-      obstacle_detected = false;  // No obstacle detected
+      vel_cmd.angular.z = 1.0;   // Turn the robot
+      vel_cmd.linear.x = 0.0;    // Stop moving forward
+      vel_pub->publish(vel_cmd); // Start turning
+      RCLCPP_INFO(this->get_logger(), "Object Detected at %0.3f; Angular Vel: %0.3f", msg.range, 1.0);
+
+      obstacle_detected += getRandomInt(1, 20);  // 0.1s to 2s of obstacle avoidance
     }
   }
 
   // Function called repeatedly by node.
   void command_loop_function(void)
   {
-    if(obstacle_detected) {
-      vel_cmd.angular.z = 0.5;
+    if(obstacle_detected > 0) {
+      vel_cmd.angular.z = 1.0;
       vel_cmd.linear.x = 0.0;
+      obstacle_detected--;
+      float seconds = ((float) obstacle_detected)/10.0;
+      RCLCPP_INFO(this->get_logger(), "Obstacle Avoidance: %0.1f seconds", seconds);
+
     } else if(const_speed > 0.0) {
       vel_cmd.angular.z = 0.0;
       vel_cmd.linear.x = const_speed;
       RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", const_speed);
+
     } else {
       return; // No command sent if speed is 0.0
     }
 
     vel_pub->publish(vel_cmd);
+  }
+
+  int getRandomInt(int min, int max) {
+    // Random number generator
+    std::random_device rd;  // Seed for random number engine
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine
+    std::uniform_int_distribution<> distrib(min, max); // Distribution range
+
+    return distrib(gen); // Returns a random integer between min and max (inclusive)
   }
 
   // ---------------------------------//
@@ -92,7 +105,7 @@ private:
   geometry_msgs::msg::Twist vel_cmd;
 
   // Variable to track whether an obstacle is detected
-  bool obstacle_detected = false;
+  int obstacle_detected = 0;
 };
 
 

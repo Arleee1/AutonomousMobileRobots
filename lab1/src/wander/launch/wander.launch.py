@@ -19,15 +19,32 @@ def generate_launch_description():
         ),
         Node(
             package='wander',
-            namespace='',
+            namespace='front',  # Correct: no leading '/'
             executable='ir_distance_node',
             name='ir_distance_node',
             output='screen',
             parameters=[
                 {'ir_index': 3}
-            ],
-            remappings=[
-
+            ]
+        ),
+        Node(
+            package='wander',
+            namespace='left',  # Correct: no leading '/'
+            executable='ir_distance_node',
+            name='ir_distance_node',
+            output='screen',
+            parameters=[
+                {'ir_index': 2}
+            ]
+        ),
+        Node(
+            package='wander',
+            namespace='right',  # Correct: no leading '/'
+            executable='ir_distance_node',
+            name='ir_distance_node',
+            output='screen',
+            parameters=[
+                {'ir_index': 4}
             ]
         )
     ])
