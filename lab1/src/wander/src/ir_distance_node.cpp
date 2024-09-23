@@ -17,7 +17,7 @@ public:
 
         // Subscribe to IR Sensor data topic from Turtlebot
         ir_sub  = this->create_subscription<irobot_create_msgs::msg::IrIntensityVector>(
-            "TTB10/ir_intensity", 
+            "ir_intensity", 
             rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
             [this](const irobot_create_msgs::msg::IrIntensityVector &msg) { this->publishRangeData(msg); }
         );
