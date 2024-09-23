@@ -8,6 +8,14 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+# add nav msgs
+find_package(nav_msgs REQUIRED)
+# add geometry msgs
+find_package(geometry_msgs REQUIRED)
+# add sensor msgs
+find_package(sensor_msgs REQUIRED)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -20,5 +28,20 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+# Add Executables
+add_executable(ttb_PID src/PID.cpp)
+
+# Add Dependencies
+ament_target_dependencies(ttb_PID rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs geometry_msgs)
+
+# Install Executables
+install(TARGETS
+  ttb_PID
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+
+
 
 ament_package()
