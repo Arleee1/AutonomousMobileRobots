@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rmw/qos_profiles.h>
 
+#include "std_msgs/msg/bool.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
@@ -59,29 +60,47 @@ public:
     // Subscriptions:
 
     // Create Subscriber for Turtlebot joy messages
-    joy_subscriber = this->create_subscription<sensor_msgs::msg::Joy>(
-            "TTB10/joy", 10, std::bind(&state_machine_Node::joy_callback, this, std::placeholders::_1));
+    joy_sub = this->create_subscription<sensor_msgs::msg::Joy>(
+        "joy", 
+        10, 
+        [this](const sensor_msgs::msg::Joy &msg) { this->joy_callback(msg); }
+    );
 
     // Create Subscriber for teleop cmd_vel messages
-    teleop_subscriber = this->create_subscription<geometry_msgs::msg::Twist>(
-            "TTB10/teleop/cmd_vel", 10, std::bind(&state_machine_Node::teleop_callback, this, std::placeholders::_1));
+    teleop_vel_sub = this->create_subscription<geometry_msgs::msg::Twist>(
+        "teleop/cmd_vel", 
+        10, 
+        [this](const geometry_msgs::msg::Twist &msg) { this->teleop_callback(msg); }
+    );
+
+    // Create Subscriber for Object Detected messages
+    obj_detected_sub = this->create_subscription<std_msgs::msg::Bool>(
+        "object_detected", 
+        10, 
+        [this](const std_msgs::msg::Bool &msg) { this->obj_detected_callback(msg); }
+    );
 
     // Create Subscriber for wander cmd_vel messages
-    wander_subscriber = this->create_subscription<sensor_msgs::msg::Range>(
-            "TTB10/wander/object_detected", 10, std::bind(&state_machine_Node::wander_callback, this, std::placeholders::_1));
+    wander_vel_sub = this->create_subscription<geometry_msgs::msg::Twist>(
+        "wander/cmd_vel", 
+        10, 
+        [this](const geometry_msgs::msg::Twist &msg) { this->wander_callback(msg); }
+    );
 
     // Create Subscriber for cruise control cmd_vel messages
-    cc_subscriber = this->create_subscription<geometry_msgs::msg::Twist>(
-            "TTB10/cc/cmd_vel", 10, std::bind(&state_machine_Node::cc_callback, this, std::placeholders::_1));
-
+    cc_vel_sub = this->create_subscription<geometry_msgs::msg::Twist>(
+        "cc/cmd_vel", 
+        10, 
+        [this](const geometry_msgs::msg::Twist &msg) { this->cc_callback(msg); }
+    );
 
     // Publishers:
 
     // Create Publisher for Turtlebot velocity commands
-    cmd_vel_publisher = this->create_publisher<geometry_msgs::msg::Twist>("TTB10/cmd_vel", 10);
+    cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
 
     // create publisher for target velocity
-    target_vel_publisher = this->create_publisher<geometry_msgs::msg::Twist>("TTB10/target_vel", 10);
+    target_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("target_vel", 10);
 
     // ---------------------------------//
 
@@ -122,8 +141,7 @@ private:
     /* 
         * Determain state based on joystick input
     */ 
-    void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
-    {
+    void joy_callback(const sensor_msgs::msg::Joy &msg) {
         // Check for teleop state
         if (msg->buttons[5] == 1)
         {
@@ -145,35 +163,38 @@ private:
         }
 
         // Publish target velocity
-        target_vel_publisher->publish(target_vel);
+        target_vel_pub->publish(target_vel);
     }
     
     /*
         * get teleop velocity
     */
-    void teleop_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
-    {
+    void teleop_callback(const geometry_msgs::msg::Twist &msg) {
         teleop_x = msg->linear.x;
         teleop_z = msg->angular.z;
     }
 
     /*
+        * Subscribe to object detected topic
+    */
+    void obj_detected_callback(const std_msgs::msg::Bool &msg) {
+        wander_active = msg->data;
+    }
+
+    /*
         * get wander velocity
     */
-    void wander_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
-    {
+    void wander_callback(const geometry_msgs::msg::Twist &msg) {
         wander_x = msg->linear.x;
         wander_z = msg->angular.z;
     }
     
-    void cc_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
-    {
+    void cc_callback(const geometry_msgs::msg::Twist &msg) {
         cc_x = msg->linear.x;
         cc_z = msg->angular.z;
     }
     
-    void state_machine_loop(void)
-    {
+    void state_machine_loop(void) {
         // Set velocity based on state
         if (teleop_active) {
             // Set velocity based on teleop
@@ -192,7 +213,7 @@ private:
         }
 
         // Publish velocity command
-        cmd_vel_publisher->publish(cmd_vel_msg);
+        cmd_vel_pub->publish(cmd_vel_msg);
     }
     
     // ---------------------------------//
@@ -200,14 +221,15 @@ private:
     // ---------------------------------//
 
     // ROS publisher object
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr target_vel_publisher;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr target_vel_pub;
 
     // ROS subscriber object
-    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr teleop_subscriber;
-    rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr wander_subscriber;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cc_subscriber;
+    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr teleop_vel_sub;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr obj_detected_sub;
+    rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr wander_vel_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cc_vel_sub;
 
     // Control timing
     rclcpp::TimerBase::SharedPtr timer;
@@ -233,8 +255,7 @@ private:
     float cc_z;
 };
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<WanderNode>());
   rclcpp::shutdown();

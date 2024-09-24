@@ -57,7 +57,6 @@ private:
       vel_cmd.linear.x = 0.0;    // Stop moving forward
       vel_pub->publish(vel_cmd); // Start turning
 
-      object_detected = true;    // Set object detected flag
       obj_detected_pub->publish(true); // Publish object detected message
 
       turn_time = getRandomInt(3, 12);  // 0.3s to 1.2s of obstacle avoidance
@@ -78,6 +77,9 @@ private:
       RCLCPP_INFO(this->get_logger(), "Obstacle Avoidance: %0.1f seconds", seconds);
 
     } else if(const_speed > 0.0) {
+      // No obstacle detected
+      obj_detected_pub->publish(false); // Publish object not detected message
+
       // Move the robot forward
       vel_cmd.angular.z = 0.0;
       vel_cmd.linear.x = const_speed;
@@ -118,9 +120,6 @@ private:
 
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
-
-  // Variable to track whether an obstacle is detected
-  bool object_detected = false;
 
   // Time to turn to avoid obstacle
   int turn_time = 0;
