@@ -15,7 +15,7 @@ find_package(sensor_msgs REQUIRED)
 # Launch dependencies
 find_package(wander REQUIRED)
 find_package(joy REQUIRED)
-# find_package(cc_variable REQUIRED)
+find_package(cc_variable REQUIRED)
 
 
 # Include directories
@@ -28,7 +28,7 @@ add_executable(state_machine_node src/state_machine_node.cpp)
 ament_target_dependencies(state_machine_node rclcpp std_msgs geometry_msgs sensor_msgs 
 wander 
 joy
-# cc_variable
+cc_variable
 )
 
 
