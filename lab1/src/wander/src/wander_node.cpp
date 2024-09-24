@@ -85,7 +85,7 @@ private:
       // Move the robot forward
       vel_cmd.angular.z = 0.0;
       vel_cmd.linear.x = const_speed;
-      RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", const_speed);
+      // RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", const_speed);
 
     } else {
       return; // No command sent if speed is 0.0

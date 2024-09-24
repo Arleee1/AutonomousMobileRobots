@@ -27,8 +27,8 @@ def generate_launch_description():
         Node(
             package='state_machine',
             namespace='/TTB10/',
-            executable='state_machine_Node',
-            name='state_machine_Node',
+            executable='state_machine_node',
+            name='state_machine_node',
             output='screen',
         )
     ])

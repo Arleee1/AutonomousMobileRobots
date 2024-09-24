@@ -55,7 +55,7 @@ class StateMachineNode : public rclcpp::Node
 {
 public:
   StateMachineNode() 
-      : Node("state_machine_Node")
+      : Node("state_machine_node")
   {
     // Subscriptions:
 
@@ -216,6 +216,7 @@ private:
 
         // Publish velocity command
         cmd_vel_pub->publish(cmd_vel_msg);
+        RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", cmd_vel_msg.linear.x);
     }
     
     // ---------------------------------//
