@@ -15,9 +15,15 @@ def generate_launch_description():
         launch_arguments={'cmd_vel': '/TTB10/joy/cmd_vel'}.items(),  # remap cmd_vel topic
     )
 
+    cc_launch_file = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([get_package_share_directory('cc_variable'), '/launch/ttb_pid.launch.py']),
+        launch_arguments={'cmd_vel': '/TTB10/cc/cmd_vel'}.items(),  # remap cmd_vel topic
+    )
+
     return LaunchDescription([
         wander_launch_file,
         joy_launch_file,
+        cc_launch_file,
         Node(
             package='state_machine',
             namespace='/TTB10/',

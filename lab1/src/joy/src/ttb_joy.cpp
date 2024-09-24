@@ -55,10 +55,17 @@ private:
     
     cmd_vel_msg.linear.x = vel_x;
     cmd_vel_msg.angular.z = vel_z;
-    RCLCPP_INFO(this->get_logger(), "Linear Vel: %0.3f", cmd_vel_msg.linear.x);
-    RCLCPP_INFO(this->get_logger(), "Angular Vel: %0.3f", cmd_vel_msg.angular.z);
-
     cmd_vel_publisher->publish(cmd_vel_msg);
+
+    if (count % 10 == 0) {  // Logs once every 10 cycles (1 second)
+      RCLCPP_INFO(this->get_logger(), "Linear Vel: %0.3f", cmd_vel_msg.linear.x);
+      RCLCPP_INFO(this->get_logger(), "Angular Vel: %0.3f", cmd_vel_msg.angular.z);
+    }
+
+    count++;
+    if (count > 1000000) {
+      count = 0;
+    }
 
   }
 
@@ -83,7 +90,8 @@ private:
 
   double vel_z = 0;
 
-
+  // tracking variable for logging
+  int count = 0;
 };
 
 
