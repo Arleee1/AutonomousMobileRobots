@@ -16,10 +16,10 @@ public:
 
     // Create Publisher for Turtlebot velocity commands
 
-    cmd_vel_publisher = this->create_publisher<geometry_msgs::msg::Twist>("TTB10/cmd_vel", 10);
+    cmd_vel_publisher = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     
     joy_subscriber = this->create_subscription<sensor_msgs::msg::Joy>(
-            "TTB10/joy", 10, std::bind(&TurtlebotJoy::joy_callback, this, std::placeholders::_1));
+            "joy", 10, std::bind(&TurtlebotJoy::joy_callback, this, std::placeholders::_1));
 
       
     timer = this->create_wall_timer(
