@@ -131,20 +131,16 @@ private:
         }
 
         // Set target velocity based on joystick input
-        if (msg->buttons[2] == 1)
-        {
+        if (msg->buttons[2] == 1) {
             target_vel.linear.x = 0.1;
         }
-        else if (msg->buttons[3] == 1)
-        {
+        else if (msg->buttons[3] == 1) {
             target_vel.linear.x = 0.2;
         }
-        else if (msg->buttons[1] == 1)
-        {
+        else if (msg->buttons[1] == 1) {
             target_vel.linear.x = 0.4;
         }
-        else if (msg->buttons[0] == 1)
-        {
+        else if (msg->buttons[0] == 1) {
             target_vel.linear.x = 0.0;
         }
 
