@@ -19,8 +19,9 @@ public:
     // Create Subscribe to the Odom data topic from Turtlebot
     imu_sub  = this->create_subscription<nav_msgs::msg::Odometry>(
       "TTB10/odom", 
-      rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
-      [this](const nav_msgs::msg::Odometry::SharedPtr &msg) { this->odom_callback(msg); }
+      //rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
+      rclcpp::SensorDataQoS(),
+      [this](const nav_msgs::msg::Odometry::SharedPtr msg) { this->odom_callback(msg); }
     );
 
     // Create Publisher for Turtlebot velocity commands
@@ -38,7 +39,7 @@ private:
   // Callback function for receiving odom sensor data
   void odom_callback(const nav_msgs::msg::Odometry::SharedPtr &msg)
   {
-    linear_velocity_x = msg.twist.twist.linear.x;
+    linear_velocity_x = msg->twist.twist.linear.x;
   }
 
   // Function called repeatedly by node.
@@ -77,7 +78,7 @@ private:
   // ---------------------------------//
 
   // ROS subsriber object
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr imu_sub;
 
   // ROS publisher object
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub;
