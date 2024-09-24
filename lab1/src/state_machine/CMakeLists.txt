@@ -12,6 +12,12 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
+# Launch dependencies
+find_package(wander REQUIRED)
+find_package(joy REQUIRED)
+# find_package(cc_variable REQUIRED)
+
+
 # Include directories
 include_directories(include)
 
@@ -19,7 +25,12 @@ include_directories(include)
 add_executable(state_machine_node src/state_machine_node.cpp)
 
 # Link against dependencies
-ament_target_dependencies(state_machine_node rclcpp std_msgs geometry_msgs sensor_msgs)
+ament_target_dependencies(state_machine_node rclcpp std_msgs geometry_msgs sensor_msgs 
+wander 
+joy
+# cc_variable
+)
+
 
 # Install the node
 install(TARGETS
