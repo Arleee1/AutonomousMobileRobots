@@ -3,7 +3,7 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <nav_msgs/msg/odom.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <chrono>
 
@@ -17,10 +17,10 @@ public:
   {
 
     // Create Subscribe to the Odom data topic from Turtlebot
-    imu_sub  = this->create_subscription<nav_msgs::msg::odom>(
+    imu_sub  = this->create_subscription<nav_msgs::msg::Odometry>(
       "TTB10/odom", 
       rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
-      [this](const nav_msgs::msg::odom &msg) { this->odom_callback(msg); }
+      [this](const nav_msgs::msg::Odometry::SharedPtr &msg) { this->odom_callback(msg); }
     );
 
     // Create Publisher for Turtlebot velocity commands
@@ -36,7 +36,7 @@ public:
 private:
 
   // Callback function for receiving odom sensor data
-  void odom_callback(const nav_msgs::msg::odom  &msg)
+  void odom_callback(const nav_msgs::msg::Odometry::SharedPtr &msg)
   {
     linear_velocity_x = msg.twist.twist.linear.x;
   }
