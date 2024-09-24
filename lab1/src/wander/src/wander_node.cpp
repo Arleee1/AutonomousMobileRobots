@@ -57,7 +57,8 @@ private:
       vel_cmd.linear.x = 0.0;    // Stop moving forward
       vel_pub->publish(vel_cmd); // Start turning
 
-      obj_detected_pub->publish(true); // Publish object detected message
+      obj_detected.data = true;
+      obj_detected_pub->publish(obj_detected); // Publish object detected message
 
       turn_time = getRandomInt(3, 12);  // 0.3s to 1.2s of obstacle avoidance
 
@@ -78,7 +79,8 @@ private:
 
     } else if(const_speed > 0.0) {
       // No obstacle detected
-      obj_detected_pub->publish(false); // Publish object not detected message
+      obj_detected.data = false;
+      obj_detected_pub->publish(obj_detected); // Publish object not detected message
 
       // Move the robot forward
       vel_cmd.angular.z = 0.0;
@@ -120,6 +122,9 @@ private:
 
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
+
+  // Bool message for object detected
+  std_msgs::msg::Bool obj_detected;
 
   // Time to turn to avoid obstacle
   int turn_time = 0;

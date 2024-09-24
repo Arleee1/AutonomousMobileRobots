@@ -1,8 +1,15 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'cmd_vel',
+            default_value='/cmd_vel',
+            description='cmd_vel topic remap'
+        ),
         Node(
             package='wander',
             namespace='/TTB10/',
@@ -13,9 +20,7 @@ def generate_launch_description():
                 {'const_speed': 0.3}
                 # {'const_speed': '0.0'} # for state machine
             ],
-            remappings=[
-                # ('/TTB10/cmd_vel', '/TTB10/wander/cmd_vel') # remap for state machine
-            ]
+            remappings=[('cmd_vel', LaunchConfiguration('cmd_vel'))],  # Remap cmd_vel
         ),
         Node(
             package='wander',
