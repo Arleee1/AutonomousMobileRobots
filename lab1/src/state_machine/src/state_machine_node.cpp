@@ -166,6 +166,7 @@ private:
 
         // Publish target velocity
         target_vel_pub->publish(target_vel);
+        // RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", target_vel.linear.x);
     }
     
     /*
