@@ -1,12 +1,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rmw/qos_profiles.h>
 
+#include "std_msgs/msg/bool.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/range.hpp>
 #include <chrono>
 #include <random>
 
 using namespace std::chrono_literals;
+
+//TODO: Publish Object Detected Message
 
 class WanderNode : public rclcpp::Node
 {
@@ -23,6 +26,9 @@ public:
 
     // Create Publisher for Turtlebot velocity commands
     vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+
+    // Create Publisher for Object Detected
+    obj_detected_pub = this->create_publisher<std_msgs::msg::Bool>("object_detected", 10);
 
     // Timer object that controls how often your command loop function is called
     timer = this->create_wall_timer(
@@ -41,7 +47,6 @@ public:
   }
 
 private:
-  float const_speed;  // Parameter const_speed
 
   // Callback function for receiving IR sensor data
   void ir_sensor_callback(const sensor_msgs::msg::Range &msg)
@@ -52,7 +57,10 @@ private:
       vel_cmd.linear.x = 0.0;    // Stop moving forward
       vel_pub->publish(vel_cmd); // Start turning
 
-      obstacle_detected = getRandomInt(3, 12);  // 0.1s to 2s of obstacle avoidance
+      object_detected = true;    // Set object detected flag
+      obj_detected_pub->publish(true); // Publish object detected message
+
+      turn_time = getRandomInt(3, 12);  // 0.3s to 1.2s of obstacle avoidance
 
       RCLCPP_INFO(this->get_logger(), "Object Detected at %0.3f; Angular Vel: %0.3f", msg.range, 1.0);
     }
@@ -61,14 +69,16 @@ private:
   // Function called repeatedly by node.
   void command_loop_function(void)
   {
-    if(obstacle_detected > 0) {
+    if(turn_time > 0) {
+      // Turn the robot
       vel_cmd.angular.z = 1.0;
       vel_cmd.linear.x = 0.0;
-      obstacle_detected--;
-      float seconds = ((float) obstacle_detected)/10.0;
+      turn_time--;
+      float seconds = ((float) turn_time)/10.0;
       RCLCPP_INFO(this->get_logger(), "Obstacle Avoidance: %0.1f seconds", seconds);
 
     } else if(const_speed > 0.0) {
+      // Move the robot forward
       vel_cmd.angular.z = 0.0;
       vel_cmd.linear.x = const_speed;
       RCLCPP_INFO(this->get_logger(), "Speed: %0.3f", const_speed);
@@ -93,11 +103,15 @@ private:
   // Variables used by the Node Object //
   // ---------------------------------//
 
+  // ROS Parameter
+  float const_speed;
+
   // ROS subscriber object
   rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr range_sub;
 
   // ROS publisher object
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr obj_detected_pub;
 
   // Control timing
   rclcpp::TimerBase::SharedPtr timer;
@@ -106,7 +120,10 @@ private:
   geometry_msgs::msg::Twist vel_cmd;
 
   // Variable to track whether an obstacle is detected
-  int obstacle_detected = 0;
+  bool object_detected = false;
+
+  // Time to turn to avoid obstacle
+  int turn_time = 0;
 };
 
 
