@@ -51,9 +51,10 @@ private:
       vel_cmd.angular.z = 1.0;   // Turn the robot
       vel_cmd.linear.x = 0.0;    // Stop moving forward
       vel_pub->publish(vel_cmd); // Start turning
-      RCLCPP_INFO(this->get_logger(), "Object Detected at %0.3f; Angular Vel: %0.3f", msg.range, 1.0);
 
-      obstacle_detected += getRandomInt(1, 20);  // 0.1s to 2s of obstacle avoidance
+      obstacle_detected = getRandomInt(3, 12);  // 0.1s to 2s of obstacle avoidance
+
+      RCLCPP_INFO(this->get_logger(), "Object Detected at %0.3f; Angular Vel: %0.3f", msg.range, 1.0);
     }
   }
 
