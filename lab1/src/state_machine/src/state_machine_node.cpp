@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
         * TTB10 Remote:
             * joy topic
                 * joystick buttons: Used to switch between states
-                    * teleop: right bumper
+                    * teleop: right bumper (5)
                     * Cruise Control target speed:
                         * Square (3): 0.1 m/s
                         * Triangle (2): 0.2 m/s
@@ -143,22 +143,21 @@ private:
     */ 
     void joy_callback(const sensor_msgs::msg::Joy &msg) {
         // Check for teleop state
-        if (msg->buttons[5] == 1)
-        {
+        if (msg->buttons[5] == 1) { // Right bumper
             teleop_active = true;
         }
 
         // Set target velocity based on joystick input
-        if (msg->buttons[2] == 1) {
+        if (msg->buttons[3] == 1) { // Square
             target_vel.linear.x = 0.1;
         }
-        else if (msg->buttons[3] == 1) {
+        else if (msg->buttons[2] == 1) { // Triangle
             target_vel.linear.x = 0.2;
         }
-        else if (msg->buttons[1] == 1) {
+        else if (msg->buttons[1] == 1) { // Circle
             target_vel.linear.x = 0.4;
         }
-        else if (msg->buttons[0] == 1) {
+        else if (msg->buttons[0] == 1) { // X
             target_vel.linear.x = 0.0;
         }
 
