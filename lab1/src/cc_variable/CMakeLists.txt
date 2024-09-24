@@ -17,17 +17,21 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 # Add Executables
-add_executable(ttb_PID src/PID.cpp)
+add_executable(ttb_PID_Node src/ttb_PID_Node.cpp)
 
 # Add Dependencies
-ament_target_dependencies(ttb_PID rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs geometry_msgs)
+ament_target_dependencies(ttb_PID_Node rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs geometry_msgs)
 
 # Install Executables
 install(TARGETS
-  ttb_PID
+  ttb_PID_Node
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(DIRECTORY 
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
