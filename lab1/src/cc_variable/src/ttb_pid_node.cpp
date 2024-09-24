@@ -74,7 +74,7 @@ private:
       double derivative = (error - prev_error) / dt;
 
       // Calculate PID output
-      double pid_output = kp * error + ki * integral + kd * derivative;
+      pid_output += kp * error + ki * integral + kd * derivative;
 
       // Set the previous error
       prev_error = error;
@@ -133,6 +133,9 @@ private:
 
   // Variable to hold the integral term
   double integral = 0;
+
+  // Variable to hold the PID output
+  double pid_output = 0;
 
   // Tracking variable for logging
   int count = 0;
