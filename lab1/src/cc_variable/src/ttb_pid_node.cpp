@@ -1,10 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rmw/qos_profiles.h>
-
 #include <geometry_msgs/msg/twist.hpp>
-#include <sensor_msgs/msg/imu.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -13,13 +10,8 @@ class TTBPIDNode : public rclcpp::Node
 {
 public:
   TTBPIDNode() 
-   : Node("ttb_pid_node"),
-     linear_velocity_x(0.0),  
-     angular_velocity_z(0.0), 
-     ref_velocity(0.1),       
-     prev_error(0.0),         
-     integral(0.0)           
-{
+   : Node("ttb_pid_node")
+  {
     // Declare and read PID parameters: kp, ki, kd
     this->declare_parameter("kp", 0.1);
     this->declare_parameter("ki", 0.001);
@@ -28,14 +20,14 @@ public:
     ki = this->get_parameter("ki").as_double();
     kd = this->get_parameter("kd").as_double();
 
-    // create Subscriber for target velocity
+    // Create Subscriber for target velocity
     target_vel_sub = this->create_subscription<geometry_msgs::msg::Twist>(
       "target_vel", 
       10,
       [this](const geometry_msgs::msg::Twist &msg) { this->target_vel_callback(msg); }
     );
 
-    // Create Subscribe to the Odom data topic from Turtlebot
+    // Create Subscriber for the Odom data topic from Turtlebot
     odom_sub  = this->create_subscription<nav_msgs::msg::Odometry>(
       "odom", 
       rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data), rmw_qos_profile_sensor_data),
@@ -63,7 +55,7 @@ private:
   // Callback function for receiving odom sensor data
   void odom_callback(const nav_msgs::msg::Odometry &msg)
   {
-    linear_velocity_x = msg.twist.linear.x;
+    linear_velocity_x = msg.twist.twist.linear.x; // Correct access to linear velocity
   }
 
   // PID control loop function
@@ -89,7 +81,7 @@ private:
 
       // Set the velocity command
       vel_cmd.linear.x = pid_output;
-      vel_cmd.angular.z = 0;
+      vel_cmd.angular.z = 0.0;
 
       // Log the values (can reduce logging frequency)
       if (count % 10 == 0) {  // Logs once every 10 cycles (1 second)
@@ -102,7 +94,6 @@ private:
         count = 0;
       }
 
-
       // Publish the velocity command
       vel_pub->publish(vel_cmd);
   }
@@ -111,43 +102,41 @@ private:
   // Variable used by the Node Object //
   // ---------------------------------//
 
-  // ROS subsriber object
+  // ROS subscriber object for target velocity
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr target_vel_sub;
+
+  // ROS subscriber object for odometry
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub;
 
-  // ROS publisher object
+  // ROS publisher object for velocity commands
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub;
 
-  // Control timing control
+  // Timer for control loop
   rclcpp::TimerBase::SharedPtr timer;
 
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
 
-  // Variable to hold angular velocity data
-  double angular_velocity_z;
-
   // Variable to hold linear velocity data
-  double linear_velocity_x;
+  double linear_velocity_x = 0.0;
 
   // Variable to hold reference velocity
   double ref_velocity = 0.1;
 
-  // Variable to hold kp, ki, kd values
-  double kp = 0.1;
-  double ki = 0.001;
-  double kd = 0.03;
+  // PID constants
+  double kp;
+  double ki;
+  double kd;
 
-
-  //variable to hold previous error
+  // Variable to hold previous error for derivative term
   double prev_error = 0;
 
-  //variable to hold integral
+  // Variable to hold the integral term
   double integral = 0;
 
-  // tracking variable for logging
+  // Tracking variable for logging
   int count = 0;
 };
-
 
 int main(int argc, char *argv[])
 {
