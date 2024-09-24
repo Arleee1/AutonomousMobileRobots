@@ -13,7 +13,7 @@ class TTBPIDNode : public rclcpp::Node
 {
 public:
   TTBPIDNode() 
-   : Node("ttb_PID_Node"),
+   : Node("ttb_pid_node"),
      linear_velocity_x(0.0),  
      angular_velocity_z(0.0), 
      ref_velocity(0.1),       
