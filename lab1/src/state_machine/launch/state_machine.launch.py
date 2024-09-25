@@ -12,7 +12,7 @@ def generate_launch_description():
 
     joy_launch_file = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([get_package_share_directory('joy'), '/launch/ttb_joy.launch.py']),
-        launch_arguments={'cmd_vel': '/TTB10/joy/cmd_vel'}.items(),  # remap cmd_vel topic
+        launch_arguments={'cmd_vel': '/TTB10/teleop/cmd_vel'}.items(),  # remap cmd_vel topic
     )
 
     cc_launch_file = IncludeLaunchDescription(
