@@ -1,0 +1,3 @@
+# How to launch
+ - To launch the joy node, run the following command: 'ros2 launch state_machine state_machine.launch.py'
+ 
