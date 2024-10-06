@@ -3,7 +3,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <chrono>
-#include <lab2/lib/include/DPID.h>
+#include <lib/include/DPID.h> // stops build here, need to learn path
 #include <cmath>
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/convert.h"
