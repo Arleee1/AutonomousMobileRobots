@@ -3,7 +3,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <chrono>
-#include <lib/include/DPID.h> // stops build here, need to learn path
+#include "../../../lib/include/DPID.h"
 #include <cmath>
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/convert.h"
@@ -72,7 +72,7 @@ private:
       double roll, pitch, yaw;
       tf2::Matrix3x3(q).getRPY(roll, pitch, yaw); // we only need yaw but good to future proof
       init_yaw = yaw;
-      goal_yaw = atan2(goal_y - init_y, goal_x - init_y) * (180.0 / M_PI) // to degrees
+      goal_yaw = atan2(goal_y - init_y, goal_x - init_y) * (180.0 / M_PI); // to degrees
       initial = false;
     }
 
@@ -102,7 +102,7 @@ private:
           vel_cmd.angular.z = error;
         }
       } else { 
-        vel_cmd.linear.x = ref_velocity // change to whatever speed you'd like. reference velocity probably
+        vel_cmd.linear.x = ref_velocity; // change to whatever speed you'd like. reference velocity probably
         vel_cmd.angular.z = 0;
       if (curr_x - init_x >= goal_x && curr_y - init_y) { // if goal reached, stop!
           vel_cmd.linear.x = 0;
@@ -146,7 +146,10 @@ private:
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
 
-  DPID ang_PID(kp,ki,kd);
+  double kp = .1;
+  double ki = .001;
+  double kd = .03;
+  DPID ang_PID(double kp, double ki, double kd);
 
   // Get initial pos of odom only once
   bool initial = true;

@@ -18,6 +18,8 @@ find_package(sensor_msgs REQUIRED)
 # add tf2 
 find_package(tf2 REQUIRED)
 
+include_directories(../../lib/include)
+
 
 
 # Add Executables
