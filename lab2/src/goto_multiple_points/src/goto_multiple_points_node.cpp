@@ -4,6 +4,8 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <chrono>
 #include "DPID.h"
+#include <vector>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -23,6 +25,13 @@ public:
 
     // create a PID object
     DPID angularPID(kp, ki, kd);
+
+    // Goal Points
+    this->declare_parameter<std::vector<double>>("goal_points", std::vector<double>{});
+    auto goal_points_vector = this->get_parameter("goal_points").as_double_array();
+    for (size_t i = 0; i < goal_points_vector.size(); i += 2) {
+      goal_points_.emplace_back(goal_points_vector[i], goal_points_vector[i + 1]);
+    }
 
     // Create Subscriber for target velocity
     target_vel_sub = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -59,47 +68,67 @@ private:
   // Callback function for receiving odom sensor data
   void odom_callback(const nav_msgs::msg::Odometry &msg)
   {
-    linear_velocity_x = msg.twist.twist.linear.x; // Correct access to linear velocity
+    /*
+    If the robot is at the current goal point, update the goal point to the next point in the list.
+    Update the error term for the PID controller. Based on current orentation and position of the robot.
+    */
+    
+    // Get the current pose of the robot
+    x_curr = msg.pose.pose.position.x;
+    y_curr = msg.pose.pose.position.y;
+    theta_current = msg.pose.pose.orientation.z;
+
+    // Get the goal position of the robot
+    x_goal = goal_points_[goal_point_index].first;
+    y_goal = goal_points_[goal_point_index].second;
+
+    // Check if the robot is at the current goal point
+    if (sqrt(pow(x_curr - x_goal, 2) + pow(y_curr - y_goal, 2)) < goal_tolerance) {
+      // Update the goal point index
+      goal_point_index = (goal_point_index + 1) % goal_points_.size();
+      // Get the goal position of the robot
+      x_goal = goal_points_[goal_point_index].first;
+      y_goal = goal_points_[goal_point_index].second;
+    }
+
+    // Caluclate theta_goal based on the current goal point and current position of the robot
+    theta_goal = atan2(y_goal - y_curr, x_goal - x_curr);
+
+    // Update bounded error based on theta_goal and theta_current
+    bounded_error = atan2(sin(theta_goal - theta_current), cos(theta_goal - theta_current));
+    
   }
 
   // PID control loop function
   void command_loop_function(void)
   {
-      // Use fixed dt of 0.1 seconds (100 ms)
-      double dt = 0.1;
 
-      // Calculate error
-      double error = ref_velocity - linear_velocity_x;
+    [CC_Steer_PID, steer_cmd] = CC_Steer_PID.compute(theta_error_bounded, dt);
+    steer_angl = min(abs(steer_cmd), steer_angl_max) * sign(steer_cmd);
 
-      // Calculate integral
-      integral += error * dt;
+    // Calculate the PID output
+    double steer_cmd = angularPID.compute(bounded_error, 0.1);
 
-      // Calculate derivative
-      double derivative = (error - prev_error) / dt;
+    // // bound the steering command
+    // steer_cmd = std::min(std::abs(steer_cmd), 0.5) * std::copysign(1.0, steer_cmd);
 
-      // Calculate PID output
-      pid_output += kp * error + ki * integral + kd * derivative;
+    // Set the velocity command
+    vel_cmd.linear.x = pid_output;
+    vel_cmd.angular.z = 0.0;
 
-      // Set the previous error
-      prev_error = error;
+    // Log the values (can reduce logging frequency)
+    if (count % 10 == 0) {  // Logs once every 10 cycles (1 second)
+        RCLCPP_INFO(this->get_logger(), "Linear Vel: %0.3f", linear_velocity_x);
+    }
 
-      // Set the velocity command
-      vel_cmd.linear.x = pid_output;
-      vel_cmd.angular.z = 0.0;
+    // Increment the counter to reduce logging frequency
+    count++;
+    if (count > 1000000) {
+      count = 0;
+    }
 
-      // Log the values (can reduce logging frequency)
-      if (count % 10 == 0) {  // Logs once every 10 cycles (1 second)
-          RCLCPP_INFO(this->get_logger(), "Linear Vel: %0.3f", linear_velocity_x);
-      }
-
-      // Increment the counter to reduce logging frequency
-      count++;
-      if (count > 1000000) {
-        count = 0;
-      }
-
-      // Publish the velocity command
-      vel_pub->publish(vel_cmd);
+    // Publish the velocity command
+    vel_pub->publish(vel_cmd);
   }
   
   // ---------------------------------//
@@ -121,25 +150,20 @@ private:
   // Velocity command message
   geometry_msgs::msg::Twist vel_cmd;
 
-  // Variable to hold linear velocity data
-  double linear_velocity_x = 0.0;
-
   // Variable to hold reference velocity
   double ref_velocity = 0.1;
 
-  // PID constants
-  double kp;
-  double ki;
-  double kd;
+  // Vector to hold goal points
+  std::vector<std::pair<double, double>> goal_points_;
 
-  // Variable to hold previous error for derivative term
-  double prev_error = 0;
+  // Currrent goal point index
+  size_t goal_point_index = 0;
 
-  // Variable to hold the integral term
-  double integral = 0;
+  // Goal Tolerance
+  double goal_tolerance = 0.2;
 
-  // Variable to hold the PID output
-  double pid_output = 0;
+  // PID error input
+  double bounded_error = 0.0;
 
   // Tracking variable for logging
   int count = 0;
